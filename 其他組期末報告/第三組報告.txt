@@ -1,0 +1,674 @@
+#####################################################################################################
+#                                                                                                   #
+# 報告主題：夏普指數策略                                                                            #
+# 課程名稱：財經分析及程式設計                                                                      #
+# 任課老師：林岳祥  老師                                                                            #
+# 報告組別：第三組                                                                                  #
+# 報告組員：趙睿、呂彗瑄                                                                            #
+# 報告時間：2019-01-02                                                                              #
+#                                                                                                   #
+#####################################################################################################
+
+#####################################################################################################
+#                                                                                                   #
+# 目錄                                                                                              #
+#                                                                                                   #
+# 一、安裝套件                                                                                      #
+# 二、下載財金資料                                                                                  #
+# 三、存取與讀取資料                                                                                #
+# 四、繪圖                                                                                          #
+# 五、從網址獲取World Indices國際重要指數清單                                                       #
+# 六、查看S&P 500                                                                                   #
+# 七、每檔指數的adjusted相關性                                                                      #
+# 八、夏普指數                                                                                      #
+# 九、夏普指數策略                                                                                  #
+# 十、夏普指數策略優化                                                                              #
+#                                                                                                   #
+#####################################################################################################
+
+#####################################################################################################
+#                                                                                                   #
+##  tidyverse套件                                                                                   #
+#   數據科學相關套件tibble（自建資料）、tidyr（資料整理）、dplyr（資料操作）、ggplot2（圖形語法）、 #
+#   purrr（更完整且一致的處理函數和向量）、readr（讀取資料）共用一個基礎設計理念、語法、資料結構。  #
+#   網址：https://www.tidyverse.org/                                                                #
+##  tidyquant套件                                                                                   #
+#   為財務領域套件與tidyverse套件搭起一座橋梁，讓tidyverse能輕易地使用財務領域套件。                #
+#   參考：https://bap.cm.nsysu.edu.tw/rmarkdown/tidyquan.html                                       #
+##  magrittr套件                                                                                    #
+#   管線運算，如接下來運用到的運算子%>%。                                                           #
+##  ggplot2套件                                                                                     #
+#   圖形語法，如曲線圖、直條圖、熱圖，如接下來運用到的ggplot()函數。                                #
+##  dplyr套件                                                                                       #
+#   資料操作，如接下來運用到的arrange()、select()、mutate()、filter()函數。                         #
+##  psych套件                                                                                       #
+#   資料處理，如接下來運用到的corr.test()函數。                                                     #
+##  reshape2套件                                                                                    #
+#   資料變形，如接下來運用到的melt()函數。                                                          #
+##  data.table套件                                                                                  #
+#   data.frame資料框型別的延伸，讀取大型資料的速度更快上數倍，進階處理語言也相當好用。              #
+#   如接下來運用到的shift()函數。                                                                   #
+##  tidyr套件                                                                                       #
+#   資料整理，如接下來運用到的fill()函數。                                                          #
+#                                                                                                   #
+#####################################################################################################
+
+#####################################################################################################
+#                                                                                                   #
+# 一、安裝套件                                                                                      #
+#                                                                                                   #
+#####################################################################################################
+
+install.packages("tidyquant")
+library(tidyquant)
+
+# 或：RStudio右下欄，點選「Packages」> 搜尋「t」> 於下方資料勾選「tidyquant」。
+
+install.packages("magrittr")
+library(magrittr)
+
+install.packages("ggplot2")
+library(ggplot2)
+
+install.packages("dplyr")
+library(dplyr)
+
+install.packages("psych")
+library(psych)
+
+install.packages("reshape2")
+library(reshape2)
+
+install.packages("data.table")
+library(data.table)
+
+install.packages("tidyr")
+library(tidyr)
+
+library(tidyquant)
+library(magrittr)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(reshape2)
+library(data.table)
+library(tidyr)
+
+#####################################################################################################
+#                                                                                                   #
+# 二、下載財金資料                                                                                  #
+#                                                                                                   #
+#####################################################################################################
+
+#################################
+  下載2330.TW（台積電）財金資料
+#################################
+
+TSM = c("2330.TW") %>%
+ tq_get(get="stock.price", from="2000-01-01")
+
+# stock.price：為從yahoo獲取之資料。
+# 運算子%>%　：將物件導向編程中的鏈結方法過渡到函數編程，適用於須不停地將前一個函數的輸出作為下一個
+#          　  函數的輸入時。
+
+#####################################################################################################
+#                                                                                                   #
+# 三、存取與讀取資料                                                                                #
+#                                                                                                   #
+#####################################################################################################
+
+###############
+  存取－－TSM
+###############
+
+write.table(TSM, "TSM.csv", sep=",", row.names=F)
+
+###############
+  讀取－－TSM
+###############
+
+library(readr)
+TSM = read_csv("TSM.csv")
+
+# 或：RStudio右上欄，點選「Import Dataset」>「From Text」>「TSM.csv」>「Open」>「Import」。
+
+#####################################################################################################
+#                                                                                                   #
+# 四、繪圖                                                                                          #
+#                                                                                                   #
+#####################################################################################################
+
+#####################
+  繪圖－－TSM收盤價
+#####################
+
+ggplot(data=TSM, aes(x=date, y=close)) +
+geom_line(color='blue' ,size=1) +
+labs(x='Date', y='Close Price', title='TSM')
+
+# 參考：https://medium.com/r-語言自學系列/r語言自學日記-6-移動平均-ma-與常見股票圖表繪製-86bd12e884a6
+
+####################
+  function－－繪圖
+####################
+
+f = function(X) {
+ ggplot(data=X, aes(x=date, y=close)) +
+ geom_line(color='blue' ,size=1) +
+ labs(x='Date', y='Close Price')
+}
+
+# 將程式碼打包成function，方便多次使用。
+
+#########################################
+  使用function－－繪圖，2354.TW（鴻準）
+#########################################
+
+鴻準 = c("2354.TW") %>%
+tq_get(get="stock.price", from="2000-01-01")
+f(鴻準)
+
+#####################################################################################################
+#                                                                                                   #
+# 五、從網址獲取World Indices國際重要指數清單                                                       #
+#     https://finance.yahoo.com/world-indices/                                                      #
+#                                                                                                   #
+#####################################################################################################
+
+############################################################
+  複製資料，只保留symbol、Name，並以「SN.csv」之檔名存檔。
+############################################################
+
+#######################################################
+  「SN.csv」額外進行處理，以達下列c()函數內容之效果。
+#######################################################
+
+WI = c("^GSPC","^DJI","^IXIC","^NYA","^XAX","^BUK100P","^RUT","^VIX","^FTSE","^GDAXI","^FCHI","^STOXX50E","^N100","^BFX","IMOEX.ME","^N225","^HSI","000001.SS","^STI","^AXJO","^AORD","^BSESN","^JKSE","^KLSE","^NZ50","^KS11","^TWII","^GSPTSE","^BVSP","^MXX","^IPSA","^MERV","^TA125.TA","^CASE30","^JN0U.JO") %>%
+tq_get(get="stock.price", from="1970-01-01")
+
+############################
+  若用quantmod套件會如何？
+############################
+
+install.packages("quantmod")
+library(quantmod)
+getSymbols( c("^GSPC","^DJI","^IXIC","^NYA","^XAX","^BUK100P","^RUT","^VIX","^FTSE","^GDAXI","^FCHI","^STOXX50E","^N100","^BFX","IMOEX.ME","^N225","^HSI","000001.SS","^STI","^AXJO","^AORD","^BSESN","^JKSE","^KLSE","^NZ50","^KS11","^TWII","^GSPTSE","^BVSP","^MXX","^IPSA","^MERV","^TA125.TA","^CASE30","^JN0U.JO"), src="yahoo", from="1970-01-01")
+
+##################
+  讀取資料－－SN
+##################
+
+#############################
+  增加Change、ROC、Name欄位
+#############################
+
+A = function(a) ifelse(is.na(lag(a)), ifelse(is.na(lag(a,2)), ifelse(is.na(lag(a,3)), ifelse(is.na(lag(a,4)), ifelse(is.na(lag(a,5)), ifelse(is.na(lag(a,6)), ifelse(is.na(lag(a,7)), ifelse(is.na(lag(a,8)), ifelse(is.na(lag(a,9)), ifelse(is.na(lag(a,10)), NA ,lag(a,10)) ,lag(a,9)) ,lag(a,8)) ,lag(a,7)) ,lag(a,6)) ,lag(a,5)) ,lag(a,4)) ,lag(a,3)) ,lag(a,2)), lag(a))
+
+WorldIndices = WI %>%
+select(symbol:adjusted) %>%
+arrange(symbol, date) %>%
+group_by(symbol) %>%
+mutate(change=adjusted-lag(adjusted)) %>%
+mutate(ROC=(adjusted-A(adjusted))/A(adjusted)) %>%
+left_join(SN, by=c("symbol"="symbol"))
+
+WorldIndices$ROC[is.na(WorldIndices$ROC)] = 0
+
+# ifelse()   ：ifelse(x, yes, no)。
+# lag()      ：尋找前面的數值。
+# arrange()  ：資料排序。
+# group_by() ：分組依據。
+# mutate()   ：增加新欄位，添加新變數於現有變數上。
+# left_join()：調度資料的方法之一。
+
+# 為何要自訂函數A ，而不直接寫mutate(ROC=(adjusted-lag(adjusted))/lag(adjusted))替代？
+# # 變化率是指本次與上次之值的變化百分比。
+  # 如直接寫上述語法，當lag(adjusted)為NA值（遺漏值）時，就無法計算而跑出NA值。
+  # 例如：
+  # > a = c(3,2,4,NA,NA,5)
+  # > a-lag(a)
+  # 輸出：
+  # NA -1  2 NA NA NA
+  # 而非：
+  # NA -1  2 NA NA 1
+  # 但Python的pct_change()函數並不須要自函數即可作出此結果！
+# 並將無變化之NA值填充為0 。
+
+##############################
+  繪圖－－WorldIndices收盤價
+##############################
+
+WorldIndices %>%
+ggplot(aes(x=date, y=close, color=symbol)) +
+geom_line(size=1) +
+labs(x='Date', y='Close Price', title='World Indices') +
+theme_tq() + 
+scale_color_tq()
+# theme_tq()      ：使用tidyquant colors自訂主題。
+# scale_color_tq()：增加對theme_tq()適合的顏色。
+
+#####################################################################################################
+#                                                                                                   #
+# 六、查看S&P 500                                                                                   #
+#                                                                                                   #
+#####################################################################################################
+
+##########
+  方法１
+##########
+
+View(WorldIndices)
+
+# 或：RStudio右上欄，點選「Enviornment」 > 於下二行的下拉式標籤點選「Global Enviornment」  
+#      > 於下方資料勾選「WorldIndices」。
+
+# 接著於左上欄資料「WorldIndices」中點選「Filter」標籤 > 在「Name」欄打上「S&P 500」。
+
+##########
+  方法２
+##########
+
+head(WorldIndices[WorldIndices$Name == "S&P 500",])
+
+# 輸出WorldIndices中的各個元素等於S&P 500。
+# head()：查看頭幾筆資料。
+
+#######################################
+  繪圖－－S&P 500收盤價與調整後收盤價
+#######################################
+
+WorldIndices %>%
+filter(Name == 'S&P 500') %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=close), size=1, color='red') +
+geom_line(aes(y=adjusted), size=1, color='blue') +
+labs(x='Date', y='Price', title='S&P 500')
+
+# filter()：選擇要分析的觀察值。
+# 上述語法第二行亦可以此語法替代：filter(Name %in% 'S&P 500') %>%
+
+####################
+  只看到adjusted？
+####################
+
+WorldIndices %>%
+filter(Name == 'S&P 500') %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=close), size=1, color='red') +
+geom_bar(stat='identity', aes(y=adjusted), size=1, fill='blue') +
+labs(x='Date', y='Price', title='S&P 500')
+
+# 兩者因相似而幾乎重疊，但「調整後收盤價」移除了除權息和增減資的價格波動，更準確的反映股票價值變化。
+# stat='identity'：geom_bar()與stat_count()之連接。
+
+###########################################################
+  將所有指數的adjusted變成一張表格
+  「SN.csv」額外進行處理，以達下列cbind()函數內容之效果。
+###########################################################
+
+Adjclose = cbind(Ad(`GSPC`),  Ad(`DJI`),  Ad(`IXIC`),  Ad(`NYA`),  Ad(`XAX`),  Ad(`BUK100P`),  Ad(`RUT`),  Ad(`VIX`),  Ad(`FTSE`),  Ad(`GDAXI`),  Ad(`FCHI`),  Ad(`STOXX50E`),  Ad(`N100`),  Ad(`BFX`),  Ad(`IMOEX.ME`),  Ad(`N225`),  Ad(`HSI`),  Ad(`000001.SS`),  Ad(`STI`),  Ad(`AXJO`),  Ad(`AORD`),  Ad(`BSESN`),  Ad(`JKSE`),  Ad(`KLSE`),  Ad(`NZ50`),  Ad(`KS11`),  Ad(`TWII`),  Ad(`GSPTSE`),  Ad(`BVSP`),  Ad(`MXX`),  Ad(`IPSA`),  Ad(`MERV`),  Ad(`TA125.TA`),  Ad(`CASE30`),  Ad(`JN0U.JO`))
+
+# cbind()：透過column（欄）合併。
+
+#####################################################################################################
+#                                                                                                   #
+# 七、每檔指數的adjusted相關性                                                                      #
+#                                                                                                   #
+#####################################################################################################
+
+####################
+  Adjclose相關係數
+####################
+
+ADRP = corr.test(Adjclose)
+ADR = ADRP$r
+
+# corr.test()        ：進行三變數以上兩兩變數間的相關係數檢定。
+# 提取相關係數 ，語法：ADRP$r。
+# 提取顯著性P值，語法：ADRP$P。
+
+##########################
+  繪圖－－adjusted相關性
+##########################
+
+############
+  融合數據
+############
+
+ADR2 = melt(ADR)
+ADR2 = ADR2 %>%
+select(Var1:value) %>%
+mutate(value2=round(value,2))
+
+# melt() ：融合數據。
+# round()：四捨五入至小數第......位。
+
+########
+  繪圖
+########
+
+ggplot(data=ADR2, aes(x=Var1, y=Var2, fill=value2)) + 
+geom_tile(color='white') +
+geom_text(aes(label=value2), color="black", size=3) +
+labs(x='', y='', title='調整後收盤價相關性') +
+scale_fill_gradient2(low='blue', mid='white', high='red', name="") +
+theme_minimal() +
+theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1, size=10))
+
+# color="white"         ：區塊為白色。
+# scale_fill_gradient2()：漸變色階。
+# theme_minimal()       ：沒有背景注釋的簡約主題。
+# axis.text.x           ：Ｘ軸文字。
+# element_text          ：文字元素。
+# hjust、vjust          ：水平、垂直對齊，範圍{0,1}。
+
+########################################################################################
+  可看到台灣加權指數（^TWII）跟英國前一百大（^BUK100P）的相關係數高達0.9，代表非常像。
+  繪圖－－台灣加權指數（^TWII）與英國前一百大（^BUK100P）的Adjclose
+########################################################################################
+
+WorldIndices %>%
+filter(symbol %in% c('^TWII', '^BUK100P')) %>%
+ggplot(aes(x=date, y=adjusted, color=symbol)) +
+geom_line(size=1) +
+labs(x='Date', y='Adjclose') +
+theme_tq() + 
+scale_color_tq()
+
+#####################################################################################################
+#                                                                                                   #
+# 八、夏普指數                                                                                      #
+#                                                                                                   #
+#####################################################################################################
+
+########################################################################
+  增加profit、risk、sharpe、profitRoll、riskRoll、sharpeRoll欄位
+########################################################################
+
+WorldIndices = WorldIndices %>%
+select(symbol, Name, date:ROC) %>%
+arrange(symbol, date) %>%
+group_by(symbol) %>%
+mutate(profit=mean(ROC, na.rm=T)) %>%
+mutate(risk=sd(ROC, na.rm=T)) %>%
+mutate(sharpe=profit/risk*(252^0.5)) %>%
+mutate(profitRoll=rollapplyr(ROC, 252, mean, na.rm=T, fill=NA, align="right")) %>%    #08
+mutate(riskRoll=rollapplyr(ROC, 252, sd, na.rm=T, fill=NA, align="right")) %>%        #09
+mutate(sharpeRoll=profitRoll/riskRoll*(252^0.5))                                      #10
+
+# 第08～10行，稍後解釋，可先不予理會。
+
+# mean()      ：平均值。
+# na.rm       ：是否刪除NA值。
+# sd()        ：標準差。
+# rollapplyr()：移動窗格（rolling window），為數組的滾動計算。
+# fill        ：空格填充值。
+# align       ：指定結果應對齊左、右、中間（預設）。
+
+# profit、risk之結果與Python有些微差異，其因在於第一天於Ｒ語言顯示為0 ，而於Python顯示為NaN。
+# 252平方根：一年約有252天交易日，將波動數值從每日調整成年。
+
+
+################
+  整理夏普指數
+################
+
+Sharpe = WorldIndices %>%
+select(symbol, Name, profit:sharpe) %>%
+arrange(symbol)
+Sharpe = unique(Sharpe)
+
+# unique()：刪除第二次以後重複出現的向量元素、行。
+
+####################
+  排序Sharpe Ratio
+####################
+
+##################################################
+  台股在倒數第三？
+  繪圖－－台股（^TWII）與美股（^GSPC）的Adjclose
+##################################################
+
+WorldIndices %>%
+filter(symbol %in% c('^TWII', '^GSPC')) %>%
+ggplot(aes(x=date, y=adjusted, color=symbol)) +
+geom_line(size=1) +
+labs(x='Date', y='Adjclose') +
+theme_tq() + 
+scale_color_tq()
+
+# 從1998年開始，台股那時上萬點，現在也是相同，反觀，美股漲了近3倍，
+# 台股的獲利不理想是導致夏普指數較低的很大的因素。
+
+###########################################################
+  時間移動窗格
+  每日都計算252天以前的sharpe值，找出台股表現較好的時段。
+  繪圖－－台灣加權指數（^TWII）之Adjclose與Sharpe Ratio
+###########################################################
+
+WorldIndices %>%
+filter(symbol %in% '^TWII') %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=adjusted), size=1, color='blue') +
+geom_line(aes(y=sharpeRoll*1500), size=1, color='orange') +
+labs(x='Date', y='Adjclose') +
+scale_y_continuous(sec.axis=sec_axis(~./1500, name='Sharpe Ratio'))
+
+# scale_y_continuous()：y軸預設刻度。
+# sec_axis()          ：輔助軸。
+# 乘於和除於1500是為了呈現sharpeRoll，亦可以其他數字調整。
+
+#####################################################################################################
+#                                                                                                   #
+# 九、夏普指數策略                                                                                  #
+#                                                                                                   #
+#####################################################################################################
+
+# 可發現，當夏普指數較低時，台股也在較低點，反之亦同；其轉折時，台股亦轉折。
+# 可編寫一策略：夏普指數向上轉折時，則買入；
+                夏普指數向下轉折時，則賣出。
+
+########################################################
+  時間序列的平滑、夏普曲線的斜率、找轉折點、找持有時段
+########################################################
+
+srsma = WorldIndices %>%
+filter(symbol %in% '^TWII') %>%
+select(symbol:date, sharpeRoll)
+
+srsma = na.omit(srsma) %>%
+mutate(srsma=rollapplyr(sharpeRoll, 60, mean, na.rm=T, fill=NA, align = "right")) %>%  #02
+mutate(srsmadiff=c(NA, diff(srsma))) %>%            #03
+mutate(srsmadiffShift=shift(srsmadiff)) %>%         #04
+mutate(buy=srsmadiff>0 & srsmadiffShift<0) %>%      #05
+mutate(sell=srsmadiff<0 & srsmadiffShift>0) %>%     #06
+mutate(b=(srsmadiff>0 & srsmadiffShift<0)*1) %>%    #07
+mutate(s=(srsmadiff<0 & srsmadiffShift>0)*2) %>%    #08
+mutate(bs=b+s) %>%                                  #09
+mutate(b0=ifelse(bs==3, NA, bs)) %>%                #10
+mutate(BUY=ifelse(b0==2, 0, b0)) %>%                #11
+fill(BUY, .direction="down")                        #12
+
+# na.omit() ：刪除有缺失值NA的行。
+# diff()    ：差分函数（後數與前數差異）。
+              前面多一個「NA」，是為了填補空缺部分。
+# shift()   ：位移。
+# fill()    ：填充NA值，"up"與"down"為向上、向下填充。
+
+# 以下階於後續介紹。
+  # 時間序列的平滑
+    # 第02行
+  # 夏普曲線的斜率
+    # 第03行
+    # 第04行
+  # 找轉折點
+    # 第05行
+    # 第06行
+  # 找持有時段
+    # 為方便後續操作，希望之後的 buy為 1，sell為 0，故有以下操作。
+    # 第07行：buy (b) ：TRUE為 1，FALSE為 0。
+    # 第08行：sell(s) ：TRUE為 2，FALSE為 0。
+    # 第09行： 1： b是T 、 s是F 。
+               2： b是F 、 s是T 。
+               0： b是F 、 s是F 。
+    # 第10行：將 0、 3改成NA。
+    # 第11行：將 2    改成 0。
+    # 第12行：向下填充NA值。如有一群NA值上方為 0，則這群NA值將變成 0。
+
+######################################
+  繪圖－－時間序列的平滑
+  時間序列較平滑，比較方便找轉折點。
+######################################
+
+srsma %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=sharpeRoll), size=1, color='red') +
+geom_line(aes(y=srsma), size=1, color='blue') +
+labs(x='Date', y='Sharpe Ratio')
+
+######################################################################################################
+  繪圖－－夏普曲線的斜率
+  可發現，當srsma（藍）由上而下轉折時，srsmadiff（橘）會快速向下穿越 0，有此特性，就可以找轉折點了！
+######################################################################################################
+
+srsma %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=srsma), size=1, color='blue') +
+geom_line(aes(y=srsmadiff*50), size=1, color='orange') +
+labs(x='Date') +
+scale_y_continuous(sec.axis=sec_axis(~./50))
+
+####################
+  繪圖－－找轉折點
+####################
+
+srsma %>%
+ggplot(aes(x=date)) +
+geom_line(aes(y=buy*1), size=1, color='red') +
+geom_line(aes(y=sell*(-1)), size=1, color='blue') +
+labs(x='Date', y='', title='轉折之簡單訊號')
+
+###########################################################################
+  繪圖－－找持有時段
+  buy=True時，買入，sell=True時，空手。如此執行20年的持有加權指數的時段。
+###########################################################################
+
+srsma %>%
+ggplot(aes(x=date, y=BUY)) +
+geom_line(size=1, color='red') +
+labs(x='Date', y='')
+
+############################
+  回測（假設不考慮手續費）
+############################
+
+twii = WorldIndices[WorldIndices$symbol == "^TWII",]
+
+srsma = srsma %>%
+arrange(date) %>%
+left_join(twii, by=c("date"="date", "symbol"="symbol", "Name"="Name", "sharpeRoll"="sharpeRoll")) %>%
+mutate(pct_ratio=shift(ROC, -1)+1) %>%
+replace_na(list(pct_ratio=1))
+
+# replace_na(list())：替換NA值。
+
+# pct_ratio：今天到明天的價格變化，訊號發生時只能隔天做交易，故將這向量全部往後遞延一天。
+             （持平是1，大於1則漲，小於1則跌。）
+
+srsmaB = srsma %>%
+filter(BUY == 1) %>%
+select(symbol:pct_ratio) %>%
+mutate(ratioCumprod=cumprod(pct_ratio))
+
+# cumprod()：連乘。將「持有」時間段的pct_ratio全部都乘起來，代表獲利。
+
+################
+  繪圖－－回測
+################
+
+srsmaB %>%
+ggplot(aes(x=date, y=ratioCumprod)) +
+geom_line(size=1, color='blue') +
+labs(x='Date', y='', title='回測')
+
+# 可發現，這個策略效果並不是很好，接下來我們使用參數最佳化，從各種組合中，找出最好的策略！
+
+#####################################################################################################
+#                                                                                                   #
+# 十、夏普指數策略優化                                                                              #
+#                                                                                                   #
+#####################################################################################################
+
+####################
+  function－－繪圖
+####################
+
+R = function(a, b, c, d) {
+
+ srsma = WorldIndices %>%
+ filter(symbol %in% '^TWII') %>%
+ select(symbol:date, sharpeRoll)
+
+ srsma = na.omit(srsma) %>%
+ mutate(srsma=rollapplyr(sharpeRoll, a, mean, na.rm=T, fill=NA, align = "right")) %>%
+ mutate(srsmadiff=c(NA, diff(srsma))*100) %>%
+ mutate(ub=quantile(srsmadiff, b, na.rm=T)) %>%
+ mutate(lb=quantile(srsmadiff, c, na.rm=T)) %>%
+ mutate(srsmadiffShift=shift(srsmadiff, d)) %>%
+ mutate(buy=srsmadiff>ub & srsmadiffShift<lb) %>%
+ mutate(sell=srsmadiff<lb & srsmadiffShift>ub) %>%
+ mutate(b=(srsmadiff>ub & srsmadiffShift<lb)*1) %>%
+ mutate(s=(srsmadiff<lb & srsmadiffShift>ub)*2) %>%
+ mutate(bs=b+s) %>%
+ mutate(b0=ifelse(bs==0, NA, bs)) %>%
+ mutate(BUY=ifelse(b0==2, 0, b0)) %>%
+ fill(BUY, .direction="down")
+
+ srsma = srsma %>%
+ arrange(date) %>%
+ left_join(twii, by=c("date"="date", "symbol"="symbol", "Name"="Name", "sharpeRoll"="sharpeRoll")) %>%
+ mutate(pct_ratio=shift(ROC, -1)+1) %>%
+ replace_na(list(pct_ratio=1))
+
+ srsmaB = srsma %>%
+ filter(BUY == 1) %>%
+ select(symbol:pct_ratio) %>%
+ mutate(ratioCumprod=cumprod(pct_ratio))
+
+ if (length(srsmaB$ratioCumprod)>0) tail(srsmaB$ratioCumprod, 1) else return(1)
+
+}
+
+# quantile()：分位數。
+# length()  ：物件長度。
+# tail()    ：查看後幾筆資料。
+
+# 讓我們試試：
+# > R(252,0.4,0.6,4)
+# 輸出：
+# > 1.415254
+
+##########################################
+  參數枚舉優化
+  使用暴力法，將所有可能的參數都找一遍。
+  進而找出最高報酬（ratioCumprod）。
+##########################################
+
+maxeq = 0
+
+for (a in seq(100, 200, 20)) {
+	for (b in seq(0.3, 0.9, 0.03)) {
+		for (c in seq(0.3, 0.57, 0.03)) {
+			for (d in seq(60, 180, 10)) {
+				srsmaB$ratioCumprod = R(a,b,c,d)
+				ifelse (maxeq<srsmaB$ratioCumprod, c(srsmaB$ratioCumprod, a, b, c, d), "")
+			}
+		}
+	}
+}
+
+# seq(from, to, by)
+# 例如：
+# > seq(100, 200, 18)
+# 輸出：
+# > 100 118 136 154 172 190
