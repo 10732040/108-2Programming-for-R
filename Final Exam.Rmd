@@ -105,5 +105,4 @@ Z3=A[2]+B+C[2]+D
 3. lists - 每個要點之前用星號，正文與要點之間留空行
 4. hyperlinks - 1.用中括弧包圍網站名稱，2.用括弧包圍具體連結，然後連接在一起使用，例如：[Github](Build software better, together).
 
-
 *我把這次學習的心得都放在Github上[108-2Programming-for-R](git@github.com:10732040/108-2Programming-for-R.git)
