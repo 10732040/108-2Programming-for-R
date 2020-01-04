@@ -19,7 +19,7 @@ output: html_document
 ### ●設定輸出格式
 ![](https://i.imgur.com/6usfx8a.png)
 
-這樣R Markdown就算初步創建完成囉~~~~
+這樣R Markdown就算初步創建完成囉~~~~<br />
 現在我們就去輸入內容吧！！！
 
 
@@ -40,10 +40,10 @@ py_available()
 ```
 
 
-如果出現FALSE 那安裝keras會解決這個問題
-install.packages("kreas")
-library(kreas)
-出現TURE我們就可以開始操作囉！
+如果出現FALSE 那安裝keras會解決這個問題<br />
+install.packages("kreas")<br />
+library(kreas)<br />
+出現TURE我們就可以開始操作囉！<br />
 
 
 
@@ -88,15 +88,15 @@ Z3=A[2]+B+C[2]+D
 ```
 
 
-> py$Z1;class(py$Z1)
-[1] "Sally is girl."
-[1] "character"
-> py$Z2;class(py$Z2)
-[1] "Angle is pretty."
-[1] "character"
-> py$Z3;class(py$Z3)
-[1] "Eva is nice."
-[1] "character"
+> py$Z1;class(py$Z1)<br />
+[1] "Sally is girl."<br />
+[1] "character"<br /><br />
+> py$Z2;class(py$Z2)<br />
+[1] "Angle is pretty."<br />
+[1] "character"<br /><br />
+> py$Z3;class(py$Z3)<br />
+[1] "Eva is nice."<br />
+[1] "character"<br />
 
 
 ## **R Markdown小技巧** 
