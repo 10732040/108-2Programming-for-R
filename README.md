@@ -71,11 +71,11 @@ Z2=A[1]+B+C[1]+D
 Z3=A[2]+B+C[2]+D
 ```
 將Z1、Z2和Z3打印出來會是長這樣
->Z1
-'Sally is girl.'
-> Z2
-'Angle is pretty.'
->Z3
+>Z1<br />
+'Sally is girl.'<br />
+> Z2<br />
+'Angle is pretty.'<br />
+>Z3<br />
 'Eva is nice.'
 
 ### ●程序３：
