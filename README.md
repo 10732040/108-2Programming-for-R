@@ -20,7 +20,7 @@ output: html_document
 ![](https://i.imgur.com/6usfx8a.png)
 
 這樣R Markdown就算初步創建完成囉<br />
-現在我們就去輸入內容吧！！！<br />~~
+現在我們就去輸入內容吧！！！<br />
 
 
 ## <font color="#006600">**建立Python程式碼** </font><br /> 
@@ -40,10 +40,12 @@ py_available()
 ```
  
 
-如果出現FALSE 那安裝keras會解決這個問題<br />
-install.packages("keras")<br />
+如果出現FALSE 那安裝keras會解決這個問題<br />install.packages("keras")<br />
 library(keras)<br />
 如果此時出現錯誤訊息告知版本有問題，那麼請打開R的介面做更新<br /> 
+如果還不行的話執行以下程序
+os <- import("os")
+os$listdir(".")
 #### section1 win用包更新R
 ```{r}　
 install.packages("installr")
@@ -57,7 +59,6 @@ library(devtools)
 install_github('andreacirilloac/updateR')
 library(updateR)
 updateR(admin_password = 'Admin user password')
-
 ```
 出現TURE我們就可以開始操作囉！<br />
 
